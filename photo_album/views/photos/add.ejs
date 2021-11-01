@@ -1,0 +1,103 @@
+<% layout('../layouts/default') %>
+<script src="https://unpkg.com/cloudinary-core/cloudinary-core-shrinkwrap.js">
+</script>
+
+<!-- A standard form for uploading images to your server -->
+<div id='backend_upload'>
+  <h3>Upload Widget</h3>
+  <button id="upload_widget" class="cloudinary-button">Upload files</button>
+  <button class="cloudinary-button" id="delete">Delete Photos</button>
+  <img id="uploadedimage" src=""></img>
+  <div id="images_uploads" class="images_uploads">
+  </div>
+</div>
+<script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+  const cloudName = "ziggysmalls"; // replace with your own cloud name
+  const uploadPreset = "vum9jf26"; // replace with your own upload preset
+  const photoArray = [];
+  const myWidget = cloudinary.createUploadWidget({
+      cloudName: cloudName,
+      uploadPreset: uploadPreset,
+      tags: ["Zachary", "CloudinarySupport"], //add the given tags to the uploaded files
+      context: {
+        alt: "Cloudinary Support Image Example"
+      }, //add the given context data to the uploaded files
+      maxImageWidth: 750,
+      maxImageHeight: 750,
+    },
+    (error, result) => {
+      if (!error && result && result.event === "success") {
+        console.log("Done! Here is the image info: ", result.info);
+        photoArray.push(result);
+        array();
+      }
+    }
+  );
+
+  const array = () => {
+    removeElementsByClass("thumbnail")
+    const list = document.createElement('ul');
+    for (var i = 0; i < photoArray.length; i++) {
+      let img = document.createElement('img');
+      img.className = 'results';
+      img.setAttribute("data-src",
+        `https://res.cloudinary.com/ziggysmalls/image/upload/w_250,h_250,b_auto,c_fill_pad,g_auto/${photoArray[i].info.path}`);
+      img.setAttribute("src", `https://res.cloudinary.com/ziggysmalls/image/upload/w_250,h_250,c_fill/${photoArray[i].info.path}`);
+      img.setAttribute("class", "thumbnail cld-responsive")
+      document.getElementById('images_uploads').appendChild(img);
+
+    }
+  }
+
+  function removeElementsByClass(className) {
+    const elements = document.getElementsByClassName(className);
+    while (elements.length > 0) {
+      elements[0].parentNode.removeChild(elements[0]);
+    }
+  }
+
+  const delete_photos = () => {
+    console.log("working")
+    photoArray.length = 0;
+    fetch('/photos/delete', {
+      method: 'DELETE'
+    }).then(response =>{
+      return response.json();
+    })
+  }
+
+  document.getElementById("delete").addEventListener(
+    "click",
+    function () {
+      delete_photos();
+    },
+    false
+  );
+
+  document.getElementById("upload_widget").addEventListener(
+    "click",
+    function () {
+      myWidget.open();
+    },
+    false
+  );
+</script>
+
+<a href="/photos" class="back_link">Back to list</a>
+
+<script type="text/javascript">
+  my_breakpoints = function (width) { // width - the current width of the containing element
+    return 50 * Math.ceil(width / 50);
+  }
+  var cl = cloudinary.Cloudinary.new({
+    cloud_name: "ziggysmalls"
+  });
+  cl.config({
+    breakpoints: my_breakpoints,
+    responsive_use_breakpoints: "resize"
+  });
+  cl.responsive();
+</script>
